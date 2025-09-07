@@ -1,6 +1,20 @@
+"use client";
+
 import Image from "next/image";
+import { useUser } from "@stackframe/stack";
+import { useQuery } from "convex/react";
+import { api } from "../convex/_generated/api";
+import { useConvexAuth } from "convex/react";
+import Link from "next/link";
 
 export default function Home() {
+  const user = useUser();
+  const { isLoading: convexAuthLoading, isAuthenticated: convexAuthenticated } = useConvexAuth();
+  
+  // Only query Convex when we're authenticated
+  const convexUser = useQuery(api.users.getCurrentUser, convexAuthenticated ? {} : "skip");
+  const authenticatedMessage = useQuery(api.users.getAuthenticatedMessage, convexAuthenticated ? {} : "skip");
+
   return (
     <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
       <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
@@ -12,12 +26,75 @@ export default function Home() {
           height={38}
           priority
         />
+        
+        <div className="max-w-2xl">
+          <h1 className="text-2xl font-bold mb-4">Stack Auth + Convex Integration</h1>
+          
+          {/* Stack Auth Status */}
+          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <h2 className="text-lg font-semibold mb-2">Stack Auth Status</h2>
+            {user ? (
+              <div>
+                <p className="text-green-600 dark:text-green-400">✅ Authenticated with Stack Auth</p>
+                <p>Email: {user.primaryEmail}</p>
+                <p>Display Name: {user.displayName}</p>
+              </div>
+            ) : (
+              <p className="text-red-600 dark:text-red-400">❌ Not authenticated with Stack Auth</p>
+            )}
+          </div>
+
+          {/* Convex Auth Status */}
+          <div className="bg-gray-100 dark:bg-gray-800 p-4 rounded-lg mb-4">
+            <h2 className="text-lg font-semibold mb-2">Convex Auth Status</h2>
+            {convexAuthLoading ? (
+              <p className="text-yellow-600 dark:text-yellow-400">⏳ Loading Convex authentication...</p>
+            ) : convexAuthenticated ? (
+              <div>
+                <p className="text-green-600 dark:text-green-400">✅ Authenticated with Convex</p>
+                {convexUser && (
+                  <div className="mt-2">
+                    <p>Convex User ID: {convexUser.id}</p>
+                    <p>Name: {convexUser.name}</p>
+                    <p>Email: {convexUser.email}</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-red-600 dark:text-red-400">❌ Not authenticated with Convex</p>
+            )}
+          </div>
+
+          {/* Integration Test */}
+          {convexAuthenticated && authenticatedMessage && (
+            <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-4">
+              <h2 className="text-lg font-semibold mb-2">Integration Test</h2>
+              <p className="text-green-800 dark:text-green-200">{authenticatedMessage}</p>
+            </div>
+          )}
+
+          {/* Sign In/Out */}
+          <div className="mt-6">
+            {user ? (
+              <Link href="/handler/sign-out" className="text-blue-500 hover:underline">
+                Sign Out
+              </Link>
+            ) : (
+              <div className="flex gap-4">
+                <Link href="/handler/sign-in" className="text-blue-500 hover:underline">
+                  Sign In
+                </Link>
+                <Link href="/handler/sign-up" className="text-blue-500 hover:underline">
+                  Sign Up
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+
         <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
           <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              app/page.tsx
-            </code>
+            Stack Auth is configured and ready to use
             .
           </li>
           <li className="tracking-[-.01em]">

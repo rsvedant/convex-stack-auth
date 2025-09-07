@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently 'next dev --turbopack' 'convex dev",
-    "build": "next build --turbopack",
+    "dev": "concurrently 'next dev' 'convex dev'",
+    "build": "next build",
     "start": "next start",
     "lint": "eslint"
   },
